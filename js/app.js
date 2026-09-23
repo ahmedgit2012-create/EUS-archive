@@ -139,7 +139,7 @@ async function route() {
   const main = $('#main');
   main.innerHTML = '';
   window.scrollTo(0, 0);
-  App.all = await DB.all();
+  App.all = await DB.all().catch(() => []);
   if (view === 'new') return go('#edit');
   if (view === 'edit') return viewEditor(main, id);
   if (view === 'view') return viewPreview(main, id);

@@ -180,6 +180,8 @@ function boot() {
   window.addEventListener('hashchange', onHash);
   window.addEventListener('beforeunload', e => { if (App.dirty) { e.preventDefault(); e.returnValue = ''; } });
   if (!('indexedDB' in window)) { $('#main').innerHTML = '<p class="empty">IndexedDB is not available in this browser.</p>'; return; }
-  route();
+  // Demo builds open with the sample cases so the archive is not empty
+  if (window.EUS_DEMO) DB.all().then(a => a.length ? null : DB.putMany(sampleReports())).catch(() => null).then(route);
+  else route();
 }
 document.addEventListener('DOMContentLoaded', boot);
