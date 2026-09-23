@@ -1,6 +1,6 @@
 {
   "name": "eus-archive",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Bilingual (Arabic / English) endoscopic ultrasound reporting and archive",
   "private": true,
   "main": "server.js",

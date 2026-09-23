@@ -59,7 +59,7 @@ function load(file) {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://x');
-  let p = decodeURIComponent(url.pathname);
+  let p = decodeURIComponent(url.pathname); // query (?v=) is ignored
   if (p === '/healthz') { res.writeHead(200, { 'Content-Type': 'text/plain' }); return res.end('ok'); }
   if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405, { Allow: 'GET, HEAD' }); return res.end(); }
   if (!authorized(req)) {
@@ -74,7 +74,7 @@ const server = http.createServer((req, res) => {
   const f = load(file);
   const headers = Object.assign({
     'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream',
-    'Cache-Control': p === '/index.html' ? 'no-cache' : 'public, max-age=300, must-revalidate',
+    'Cache-Control': 'no-cache', // always revalidate so a new deploy shows immediately
     ETag: f.etag,
     Vary: 'Accept-Encoding',
   }, SECURITY_HEADERS);

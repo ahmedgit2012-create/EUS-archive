@@ -147,7 +147,6 @@ Object.assign(T, {
   secPatient: ['Patient information', 'بيانات المريض'],
   secProcedure: ['Procedure details', 'تفاصيل الإجراء'],
   secIndication: ['Indication & clinical data', 'دواعي الإجراء والبيانات السريرية'],
-  secPrep: ['Pre-procedure assessment & sedation', 'التقييم قبل الإجراء والتخدير'],
   secFindings: ['Systematic examination', 'الفحص المنهجي'],
   secLesions: ['Lesion characterization', 'وصف الآفات'],
   secRosemont: ['Chronic pancreatitis — Rosemont criteria', 'التهاب البنكرياس المزمن — معايير روزمونت'],
@@ -205,21 +204,6 @@ Object.assign(T, {
   labLipase: ['Lipase (U/L)', 'الليباز (وحدة/لتر)'],
   labOther: ['Other labs', 'تحاليل أخرى'],
 
-  // prep
-  ppAsa: ['ASA class', 'تصنيف ASA'],
-  ppConsent: ['Informed consent', 'الموافقة المستنيرة'],
-  ppFasting: ['Fasting ≥ 6 h', 'الصيام 6 ساعات فأكثر'],
-  ppAnticoag: ['Antithrombotic therapy', 'مضادات التخثر والصفائح'],
-  ppAnticoagPlan: ['Antithrombotic management', 'خطة إيقاف مضادات التخثر'],
-  ppInr: ['INR', 'INR'],
-  ppPlt: ['Platelets (×10³/µL)', 'الصفائح (×10³/ميكرولتر)'],
-  ppAbx: ['Antibiotic prophylaxis', 'المضاد الحيوي الوقائي'],
-  ppAbxName: ['Antibiotic & dose', 'المضاد الحيوي والجرعة'],
-  ppTimeout: ['Safety time-out done', 'تم إجراء وقفة التحقق'],
-  sdType: ['Sedation / anesthesia', 'التخدير / التهدئة'],
-  sdAgents: ['Agents & doses', 'الأدوية والجرعات'],
-  sdPosition: ['Patient position', 'وضعية المريض'],
-  sdCo2: ['CO₂ insufflation', 'النفخ بثاني أكسيد الكربون'],
 
   // findings
   fdStatus: ['Status', 'الحالة'],
