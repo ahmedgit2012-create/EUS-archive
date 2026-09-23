@@ -93,7 +93,6 @@ function sheetHTML(r, L) {
     <section class="s-sec s-patient"><dl class="kvs cols3">${fieldsKV(P, r, L)}</dl></section>
     ${secBlock('secProcedure', L, dl(procKV))}
     ${secBlock('secIndication', L, dl(fieldsKV(secById('indication').fields, r, L)))}
-    ${secBlock('secPrep', L, dl(fieldsKV(secById('prep').fields, r, L)))}
     ${secBlock('secFindings', L, stationsHTML + dl(fieldsKV(secById('findings').fields, r, L)))}
     ${secBlock('secLesions', L, lesionsHTML)}
     ${secBlock('secRosemont', L, rmHTML)}

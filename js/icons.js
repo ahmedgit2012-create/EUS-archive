@@ -132,6 +132,6 @@ function installIcons() {
 
 /* Icon for each report section */
 const SECTION_ICONS = {
-  patient: 'person', procedure: 'calendar', indication: 'clipboard', prep: 'capsule', findings: 'fan', lesions: 'target', rosemont: 'hexes',
+  patient: 'person', procedure: 'calendar', indication: 'clipboard', findings: 'fan', lesions: 'target', rosemont: 'hexes',
   staging: 'layers', tissue: 'needle', therapy: 'stent', ae: 'warning', impression: 'doc', images: 'image', pathology: 'flask', sign: 'pen',
 };

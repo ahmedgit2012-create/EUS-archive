@@ -259,7 +259,7 @@ function newReport() {
   return {
     id: uid(), number: '', status: 'draft', createdAt: Date.now(), updatedAt: Date.now(),
     patient: {}, procedure: { date: today(), endoscopist: docs[0] || '', scopeType: 'linear', route: 'upper', priority: 'elective', types: ['diag'] },
-    indication: { items: [] }, prep: { consent: 'yes', fasting: 'yes', timeout: 'yes' }, findings: {}, stations: {}, lesions: [], rosemont: { items: [] },
+    indication: { items: [] }, findings: {}, stations: {}, lesions: [], rosemont: { items: [] },
     staging: {}, tissue: {}, therapy: {}, ae: { items: [] }, impression: { recs: [] }, images: [], pathology: {}, sign: { name: docs[0] || '', date: today() },
   };
 }

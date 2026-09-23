@@ -43,7 +43,6 @@ Run the same server locally with `npm start` (http://localhost:3000). · للت�
 | Patient · بيانات المريض | Name, file/MRN, national ID, DOB → age, sex, phone, patient type, ward, weight, referring physician & department, allergies |
 | Procedure · الإجراء | Date, start/end time → duration, priority, endoscopist, assistant, nurse, anesthetist, echoendoscope type (linear / radial / miniprobe), scope model & serial, route, 16 procedure types, extent reached, examination quality & limitations |
 | Indication · الدواعي | 26 coded indications, clinical history, prior imaging, CA 19-9, CEA, bilirubin, ALP, lipase |
-| Pre-procedure & sedation · التحضير والتخدير | ASA class, consent, fasting, time-out, CO₂, antithrombotics & plan, INR, platelets, antibiotic prophylaxis, sedation type & agents, position |
 | Systematic examination · الفحص المنهجي | 30 stations in five standard positions (mediastinum, stomach, duodenum, vessels, lower GI), each Normal / Abnormal / Not visualized + description; CBD & MPD diameters, CBD and gallbladder content, pancreatic parenchyma |
 | Lesions · الآفات | Unlimited lesions: organ, location, nature, two-axis size, echogenicity, margins, shape, **wall layer of origin** for subepithelial lesions, cyst / solid / lymph-node features, **vascular contact (abutment / encasement)**, Doppler, elastography & strain ratio, contrast enhancement |
 | Rosemont · روزمونت | Chronic pancreatitis criteria with automatic classification (normal / indeterminate / suggestive / consistent) |
