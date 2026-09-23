@@ -17,8 +17,8 @@ function viewStats(main) {
   const diag = pathRx.filter(r => !['nondiag', 'atypical'].includes(r.pathology.category)).length;
   const pending = reps.filter(r => r.pathology?.status === 'pending').length;
 
-  const tile = (label, value, sub, state) => `<div class="tile">
-    <span class="t-label">${esc(label)}</span>
+  const tile = (label, value, sub, state, icon) => `<div class="tile">
+    ${ico(icon, 'xl t-ico')}<span class="t-label">${esc(label)}</span>
     <span class="t-value num">${value == null ? '—' : esc(value)}</span>
     ${sub ? `<span class="t-sub">${state ? `<i class="dot ${state}" aria-hidden="true"></i>` : ''}${esc(sub)}</span>` : ''}</div>`;
   const aeP = pct(aeCount, aeKnown.length), yP = pct(diag, pathRx.length), rP = pct(roseAdequate, roseDone.length);
@@ -42,26 +42,29 @@ function viewStats(main) {
   };
 
   main.innerHTML = `
-  <div class="page-head"><div><h1>${esc(t('navStats'))}</h1><p class="muted">${esc(t('stNote'))}</p></div></div>
+  <div class="page-head"><div><h1>${ico('stats', 'xl')}${esc(t('navStats'))}</h1><p class="muted">${esc(t('stNote'))}</p></div>
+    <div class="head-actions"><button class="btn primary" id="bPrintStats">${ico('printer')}${esc(t('print'))}</button></div></div>
+  <div class="print-only print-head">${printHeader(t('navStats'))}</div>
   <div class="tiles">
-    ${tile(t('stTotal'), n)}
-    ${tile(t('stMonth'), reps.filter(r => (r.procedure?.date || '').startsWith(month)).length)}
-    ${tile(t('stTissue'), tissue.length, n ? `${pct(tissue.length, n)} %` : '')}
-    ${tile(t('stTherapeutic'), therapeutic.length, n ? `${pct(therapeutic.length, n)} %` : '')}
-    ${tile(t('stAE'), aeP == null ? null : aeP + ' %', aeP == null ? '' : `${aeCount} / ${aeKnown.length} · ${aeP < 2 ? ok : off}`, aeP == null ? '' : aeP < 2 ? 'good' : 'bad')}
-    ${tile(t('stRose'), rP == null ? null : rP + ' %', rP == null ? '' : `${roseAdequate} / ${roseDone.length}`)}
-    ${tile(t('stYield'), yP == null ? null : yP + ' %', yP == null ? '' : `${diag} / ${pathRx.length} · ${yP >= 70 ? ok : off}`, yP == null ? '' : yP >= 70 ? 'good' : 'bad')}
-    ${tile(t('stPending'), pending, '', '')}
+    ${tile(t('stTotal'), n, '', '', 'stack')}
+    ${tile(t('stMonth'), reps.filter(r => (r.procedure?.date || '').startsWith(month)).length, '', '', 'calendar')}
+    ${tile(t('stTissue'), tissue.length, n ? `${pct(tissue.length, n)} %` : '', '', 'needle')}
+    ${tile(t('stTherapeutic'), therapeutic.length, n ? `${pct(therapeutic.length, n)} %` : '', '', 'stent')}
+    ${tile(t('stAE'), aeP == null ? null : aeP + ' %', aeP == null ? '' : `${aeCount} / ${aeKnown.length} · ${aeP < 2 ? ok : off}`, aeP == null ? '' : aeP < 2 ? 'good' : 'bad', 'warning')}
+    ${tile(t('stRose'), rP == null ? null : rP + ' %', rP == null ? '' : `${roseAdequate} / ${roseDone.length}`, '', 'flask')}
+    ${tile(t('stYield'), yP == null ? null : yP + ' %', yP == null ? '' : `${diag} / ${pathRx.length} · ${yP >= 70 ? ok : off}`, yP == null ? '' : yP >= 70 ? 'good' : 'bad', 'target')}
+    ${tile(t('stPending'), pending, '', '', 'hourglass')}
   </div>
   <div class="panels">
-    <section class="panel wide"><h2>${esc(t('stByMonth'))}</h2>
+    <section class="panel wide"><h2>${ico('calendar')}${esc(t('stByMonth'))}</h2>
       <div class="bars" role="img" aria-label="${esc(t('stByMonth'))}: ${months.map((m, i) => `${m} ${counts[i]}`).join(', ')}">
         <span class="bars-max num">${max}</span>
         ${months.map((m, i) => `<div class="bar-col" tabindex="0"><span class="bar-tip num">${counts[i]} · ${esc(m)}</span><i style="height:${(counts[i] / max) * 100}%"></i><small>${esc(mName(m))}</small></div>`).join('')}
       </div></section>
-    <section class="panel"><h2>${esc(t('stByIndication'))}</h2>${rank('indications', r => r.indication?.items)}</section>
-    <section class="panel"><h2>${esc(t('stByOperator'))}</h2>${rank(null, r => r.procedure?.endoscopist)}</section>
+    <section class="panel"><h2>${ico('clipboard')}${esc(t('stByIndication'))}</h2>${rank('indications', r => r.indication?.items)}</section>
+    <section class="panel"><h2>${ico('person')}${esc(t('stByOperator'))}</h2>${rank(null, r => r.procedure?.endoscopist)}</section>
   </div>`;
+  $('#bPrintStats').onclick = () => printNow();
 }
 
 /* ---------- settings ---------- */
@@ -70,31 +73,32 @@ function viewSettings(main) {
   const fld = (k, key, type = 'text', span = 2) => `<label class="field span${span}" for="s_${k}"><span class="flabel">${esc(t(key))}</span>
     ${type === 'textarea' ? `<textarea id="s_${k}" data-s="${k}" rows="4">${esc(S[k] || '')}</textarea>` : `<input id="s_${k}" data-s="${k}" type="text" value="${esc(S[k] || '')}"${k.endsWith('Ar') ? ' dir="rtl"' : k.endsWith('En') ? ' dir="ltr"' : ''}>`}</label>`;
   main.innerHTML = `
-  <div class="page-head"><div><h1>${esc(t('navSettings'))}</h1></div></div>
+  <div class="page-head"><div><h1>${ico('gear', 'xl')}${esc(t('navSettings'))}</h1></div></div>
   <form id="sForm" class="form settings" novalidate>
-    <section class="sec"><h2>${esc(t('setFacility'))}</h2><div class="grid">
+    <section class="sec"><h2>${ico('hospital', 'lg')}${esc(t('setFacility'))}</h2><div class="grid">
       ${fld('hospEn', 'setHospEn')}${fld('hospAr', 'setHospAr')}${fld('deptEn', 'setDeptEn')}${fld('deptAr', 'setDeptAr')}
       ${fld('contact', 'setContact', 'text', 4)}
       <div class="field span2"><span class="flabel">${esc(t('setLogo'))}</span>
         <div class="logo-row">${S.logo ? `<img src="${S.logo}" alt="" class="logo-prev">` : ''}
-          <label class="btn ghost sm" for="logoIn">${esc(t('chooseLogo'))}</label><input id="logoIn" type="file" accept="image/*" hidden>
-          ${S.logo ? `<button type="button" class="btn sm ghost danger-text" id="logoRm">${esc(t('setLogoRemove'))}</button>` : ''}</div></div>
+          <label class="btn ghost sm" for="logoIn">${ico('image')}${esc(t('chooseLogo'))}</label><input id="logoIn" type="file" accept="image/*" hidden>
+          ${S.logo ? `<button type="button" class="btn sm ghost danger-text" id="logoRm">${ico('trash')}${esc(t('setLogoRemove'))}</button>` : ''}</div></div>
       <label class="field" for="s_prefix"><span class="flabel">${esc(t('setPrefix'))}</span><input id="s_prefix" data-s="prefix" class="mono" dir="ltr" value="${esc(S.prefix)}"></label>
       <label class="field" for="s_reportLang"><span class="flabel">${esc(t('setDefaultLang'))}</span><select id="s_reportLang" data-s="reportLang">
         ${[['bi', 'langBi'], ['ar', 'langAr'], ['en', 'langEn']].map(([k, key]) => `<option value="${k}"${S.reportLang === k ? ' selected' : ''}>${esc(t(key))}</option>`).join('')}</select></label>
       ${fld('footer', 'setFooter', 'text', 4)}
     </div></section>
-    <section class="sec"><h2>${esc(t('setDefaults'))}</h2><div class="grid">
+    <section class="sec"><h2>${ico('person', 'lg')}${esc(t('setDefaults'))}</h2><div class="grid">
       ${fld('doctors', 'setDoctors', 'textarea', 2)}${fld('staff', 'setStaff', 'textarea', 2)}${fld('scopes', 'setScopes', 'textarea', 4)}
     </div></section>
-    <div class="form-actions"><button class="btn primary" type="submit">${esc(t('setSave'))}</button></div>
-    <section class="sec"><h2>${esc(t('setData'))}</h2>
+    <div class="form-actions"><button class="btn primary" type="submit">${ico('save')}${esc(t('setSave'))}</button></div>
+    <section class="sec"><h2>${ico('cloudUp', 'lg')}${esc(t('setData'))}</h2>
       <p class="note">${esc(t('setDataNote'))}</p>
       <div class="btn-row">
-        <button type="button" class="btn ghost" id="bBk">${esc(t('exportJson'))}</button>
-        <label class="btn ghost" for="restoreIn">${esc(t('importJson'))}</label><input id="restoreIn" type="file" accept=".json,application/json" hidden>
-        <button type="button" class="btn ghost" id="bCsv">${esc(t('exportCsv'))}</button>
-        <button type="button" class="btn ghost" id="bSamples">${esc(t('loadSamples'))}</button>
+        <button type="button" class="btn ghost" id="bBk">${ico('cloudDown')}${esc(t('exportJson'))}</button>
+        <label class="btn ghost" for="restoreIn">${ico('cloudUp')}${esc(t('importJson'))}</label><input id="restoreIn" type="file" accept=".json,application/json" hidden>
+        <button type="button" class="btn ghost" id="bCsv">${ico('sheet')}${esc(t('exportCsv'))}</button>
+        <button type="button" class="btn ghost" id="bBlank">${ico('printer')}${esc(t('printBlank'))}</button>
+        <button type="button" class="btn ghost" id="bSamples">${ico('stack')}${esc(t('loadSamples'))}</button>
       </div></section>
   </form>`;
   $('#sForm').onsubmit = e => {
@@ -113,6 +117,7 @@ function viewSettings(main) {
   const rm = $('#logoRm'); if (rm) rm.onclick = () => { Settings.save({ logo: '' }); viewSettings(main); };
   $('#bBk').onclick = exportBackup;
   $('#bCsv').onclick = exportCsv;
+  $('#bBlank').onclick = printBlankForm;
   $('#restoreIn').onchange = e => { if (e.target.files[0]) importBackup(e.target.files[0]); };
   $('#bSamples').onclick = async () => { await DB.putMany(sampleReports()); toast(t('samplesLoaded'), 'ok'); go('#archive'); };
 }
@@ -175,6 +180,7 @@ function sampleReports() {
 /* ---------- start-up ---------- */
 function boot() {
   App.lang = Settings.load().uiLang || 'ar';
+  installIcons();
   applyLang();
   $('#langBtn').onclick = () => setLang(App.lang === 'ar' ? 'en' : 'ar');
   window.addEventListener('hashchange', onHash);

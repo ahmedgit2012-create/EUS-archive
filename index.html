@@ -14,30 +14,29 @@
 <body>
 <header class="topbar">
   <a class="brand" href="#archive" aria-label="EUS Archive">
-    <svg class="brand-mark" viewBox="0 0 40 32" aria-hidden="true">
-      <path d="M20 3 5 27a30 30 0 0 0 30 0Z" class="fan"/>
-      <path d="M8.6 21.5a24 24 0 0 0 22.8 0M11.4 16.5a18 18 0 0 0 17.2 0M14.2 11.5a12 12 0 0 0 11.6 0" class="arcs"/>
-      <circle cx="21.5" cy="20" r="2.6" class="echo"/>
-    </svg>
+    <span class="brand-mark" data-ico="fan" data-ico-cls="xl"></span>
     <span><b data-t="appName">EUS Archive</b><small data-t="appSub"></small></span>
   </a>
   <nav class="nav" aria-label="Main">
-    <a href="#archive" data-v="archive" data-t="navArchive">Archive</a>
-    <a href="#edit" data-v="new" data-t="navNew">New report</a>
-    <a href="#stats" data-v="stats" data-t="navStats">Statistics</a>
-    <a href="#settings" data-v="settings" data-t="navSettings">Settings</a>
+    <a href="#archive" data-v="archive" data-ico="archive"><span data-t="navArchive">Archive</span></a>
+    <a href="#edit" data-v="new" data-ico="newdoc"><span data-t="navNew">New report</span></a>
+    <a href="#stats" data-v="stats" data-ico="stats"><span data-t="navStats">Statistics</span></a>
+    <a href="#settings" data-v="settings" data-ico="gear"><span data-t="navSettings">Settings</span></a>
   </nav>
-  <button class="lang-btn" id="langBtn" type="button" data-t="langSwitch">English</button>
+  <button class="lang-btn" id="langBtn" type="button" data-ico="globe"><span data-t="langSwitch">English</span></button>
 </header>
 <main id="main" class="main"></main>
 <div id="modal" class="modal" hidden></div>
 <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
 <noscript><p style="padding:24px">This program needs JavaScript. / يحتاج هذا البرنامج إلى تفعيل JavaScript.</p></noscript>
+<div id="printArea" class="print-area" aria-hidden="true"></div>
 <script src="js/i18n.js"></script>
+<script src="js/icons.js"></script>
 <script src="js/db.js"></script>
 <script src="js/schema.js"></script>
 <script src="js/app.js"></script>
 <script src="js/report.js"></script>
+<script src="js/print.js"></script>
 <script src="js/views.js"></script>
 </body>
 </html>

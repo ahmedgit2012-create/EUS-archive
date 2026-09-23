@@ -114,25 +114,26 @@ function sheetHTML(r, L) {
 
 /* ---------- preview view ---------- */
 let previewLang = null;
-async function viewPreview(main, id) {
+async function viewPreview(main, id, autoPrint) {
   const r = await DB.get(id);
   if (!r) return go('#archive');
   const L = previewLang || Settings.load().reportLang || 'bi';
   main.innerHTML = `
   <div class="preview-bar">
-    <button class="btn ghost" id="bBack">← ${esc(t('back'))}</button>
+    <button class="btn ghost" id="bBack">${ico('arrow', 'flip')}${esc(t('back'))}</button>
     <div class="seg-ctl" role="group" aria-label="${esc(t('printLang'))}">
       ${[['ar', 'langAr'], ['en', 'langEn'], ['bi', 'langBi']].map(([k, key]) => `<button class="${k === L ? 'on' : ''}" data-l="${k}" aria-pressed="${k === L}">${esc(t(key))}</button>`).join('')}
     </div>
     <span class="spacer"></span>
-    <button class="btn ghost" id="bCopy">${esc(t('copyText'))}</button>
-    <button class="btn ghost" id="bEdit">${esc(t('edit'))}</button>
-    <button class="btn primary" id="bPrint">${esc(t('print'))}</button>
+    <button class="btn ghost" id="bCopy">${ico('clipboard')}${esc(t('copyText'))}</button>
+    <button class="btn ghost" id="bEdit">${ico('pencil')}${esc(t('edit'))}</button>
+    <button class="btn primary" id="bPrint">${ico('printer')}${esc(t('print'))}</button>
   </div>
   <div class="sheet-wrap" id="sheetWrap">${sheetHTML(r, L)}</div>`;
   $('#bBack').onclick = () => go('#archive');
   $('#bEdit').onclick = () => go('#edit/' + id);
-  $('#bPrint').onclick = () => window.print();
+  $('#bPrint').onclick = () => printNow();
+  if (autoPrint) { App.suppressHash = true; history.replaceState(null, '', '#view/' + id); lastHash = location.hash; App.suppressHash = false; waitImages($('.sheet')).then(printNow); }
   $('.seg-ctl').onclick = e => { const b = e.target.closest('[data-l]'); if (b) { previewLang = b.dataset.l; viewPreview(main, id); } };
   $('#bCopy').onclick = async () => {
     const txt = $('.sheet').innerText.replace(/\n{3,}/g, '\n\n');

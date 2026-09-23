@@ -15,8 +15,26 @@ It runs entirely in the browser, works offline, and needs no server or installat
 3. Open **Settings**, enter the hospital name and logo, the list of doctors and scopes, and optionally click **Load sample cases**.
    افتح **الإعدادات** وأدخل اسم المستشفى والشعار وأسماء الأطباء والمناظير، ويمكنك الضغط على **تحميل حالات نموذجية** للتجربة.
 
-To share it on a hospital network, put the folder on any static web server (IIS, nginx, GitHub Pages).
-للاستخدام على شبكة المستشفى ضع المجلد على أي خادم ويب ثابت.
+## Deploying on Railway · النشر على Railway
+
+The repository is ready for [Railway](https://railway.com): `package.json` starts a small Node server (`server.js`, no dependencies) and `railway.json` sets the health check.
+
+1. On Railway: **New Project → Deploy from GitHub repo** → choose this repository (and the branch you want).
+2. Railway detects Node and runs `npm start`. No build step is needed.
+3. Open **Settings → Networking → Generate Domain** to get a public `https://…up.railway.app` address.
+4. Recommended: under **Variables** add `AUTH_USER` and `AUTH_PASS`. The site then asks for this username and password before opening.
+
+المستودع جاهز للنشر على Railway:
+1. من Railway اختر **New Project ← Deploy from GitHub repo** ثم اختر هذا المستودع.
+2. يتعرف Railway على Node ويشغّل `npm start` تلقائياً، ولا حاجة لأي خطوة بناء.
+3. من **Settings ← Networking ← Generate Domain** تحصل على رابط عام يبدأ بـ `https://`.
+4. يُنصح بإضافة المتغيرين `AUTH_USER` و`AUTH_PASS` من **Variables** ليطلب الموقع اسم مستخدم وكلمة مرور قبل الدخول.
+
+> On Railway the program is served from the web, but reports are still stored in each user's own browser.
+> Two computers opening the same address do **not** share one archive. Use Backup / Restore to move reports between them.
+> حتى بعد النشر تبقى التقارير محفوظة في متصفح كل مستخدم، ولا يتشارك جهازان نفس الأرشيف. استخدم النسخ الاحتياطي والاستعادة لنقل التقارير.
+
+Run the same server locally with `npm start` (http://localhost:3000). · للتشغيل محلياً: `npm start`.
 
 ## What a report contains · محتويات التقرير
 
@@ -41,7 +59,13 @@ To share it on a hospital network, put the folder on any static web server (IIS,
 ## Features · المزايا
 
 - **Interface in Arabic or English** (one click, full RTL support). · واجهة عربية أو إنجليزية مع دعم كامل للكتابة من اليمين لليسار.
-- **Print the report in Arabic, English, or bilingual** side by side on A4, or save as PDF from the print dialog. · طباعة التقرير بالعربية أو الإنجليزية أو باللغتين معاً على ورق A4، أو حفظه PDF.
+- **Printing · الطباعة** (every print can also be saved as PDF from the print dialog · كل طباعة يمكن حفظها PDF):
+  - Full report on A4 in Arabic, English or bilingual; the report number becomes the PDF file name. · التقرير كاملاً بالعربية أو الإنجليزية أو باللغتين.
+  - Quick print from each archive row. · طباعة مباشرة من كل سطر في الأرشيف.
+  - Procedure register (log book) of the filtered list, A4 landscape. · سجل الإجراءات للقائمة المعروضة بورق أفقي.
+  - Statistics page. · صفحة الإحصائيات.
+  - Blank bilingual paper form for handwritten reports (Settings). · نموذج ورقي فارغ ثنائي اللغة للكتابة اليدوية (من الإعدادات).
+- 3D icon set drawn in SVG (no image files, sharp at any size). · أيقونات ثلاثية الأبعاد مرسومة بـ SVG.
 - Automatic report numbers (`EUS-2026-0001`), draft / final status, and a DRAFT watermark on unvalidated reports. · ترقيم تلقائي للتقارير، وحالة مسودة / نهائي، وعلامة «مسودة» على التقارير غير المعتمدة.
 - Required-field check before a report is saved as final. · التحقق من الحقول الإلزامية قبل الحفظ النهائي.
 - Archive search by name, file number, report number, diagnosis or indication; date and status filters; "pathology pending" list. · بحث وتصفية في الأرشيف، وقائمة بانتظار نتيجة الباثولوجي.
@@ -53,6 +77,7 @@ To share it on a hospital network, put the folder on any static web server (IIS,
 
 Reports are saved **only in the browser on this computer** (IndexedDB). Nothing is sent over the internet
 (the only network request is the optional Google font; the program falls back to system fonts offline).
+The Railway server only delivers the program files; it never receives report data.
 Clearing the browser's site data deletes the archive, so **back up regularly** and store the backup file securely — it contains patient data.
 
 تُحفظ التقارير **في متصفح هذا الجهاز فقط**، ولا تُرسل أي بيانات عبر الإنترنت. مسح بيانات المتصفح يحذف الأرشيف،
@@ -61,6 +86,9 @@ Clearing the browser's site data deletes the archive, so **back up regularly** a
 ## Files · الملفات
 
 ```
+server.js         web server for Railway / Node (optional password)
+package.json      npm start
+railway.json      Railway health check & restart policy
 index.html        page shell
 css/style.css     interface and A4 print layout
 js/i18n.js        Arabic / English dictionary and all coded option lists
@@ -69,6 +97,8 @@ js/db.js          IndexedDB storage and settings
 js/app.js         routing, archive, report editor, impression drafting
 js/report.js      printable report sheet, preview, backup and CSV export
 js/views.js       statistics, settings, sample cases, start-up
+js/icons.js       3D icon set
+js/print.js       register, blank form and print helpers
 ```
 
 To add a field, add it to `SCHEMA` in `js/schema.js` and its label to `T` in `js/i18n.js`; it then appears in the form, the printed report and the CSV automatically.

@@ -60,7 +60,7 @@ function confirmBox(title, body, okLabel, danger = true) {
   return new Promise(resolve => {
     const m = $('#modal');
     m.innerHTML = `<div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="mTitle">
-      <h3 id="mTitle">${esc(title)}</h3>${body ? `<p>${esc(body)}</p>` : ''}
+      <h3 id="mTitle">${ico(danger ? 'warning' : 'doc', 'lg')}${esc(title)}</h3>${body ? `<p>${esc(body)}</p>` : ''}
       <div class="modal-actions"><button class="btn ghost" data-a="no">${esc(title === t('confirmLeave') ? t('keepEditing') : t('cancel'))}</button>
       <button class="btn ${danger ? 'danger' : 'primary'}" data-a="yes">${esc(okLabel)}</button></div></div>`;
     m.hidden = false;
@@ -134,15 +134,16 @@ async function onHash() {
   route();
 }
 async function route() {
-  const [view, id] = (location.hash.slice(1) || 'archive').split('/');
+  const [view, id, action] = (location.hash.slice(1) || 'archive').split('/');
   $$('.nav a').forEach(a => a.classList.toggle('on', a.dataset.v === (view === 'edit' && !id ? 'new' : view)));
   const main = $('#main');
   main.innerHTML = '';
+  document.body.classList.remove('printing-area');
   window.scrollTo(0, 0);
   App.all = await DB.all().catch(() => []);
   if (view === 'new') return go('#edit');
   if (view === 'edit') return viewEditor(main, id);
-  if (view === 'view') return viewPreview(main, id);
+  if (view === 'view') return viewPreview(main, id, action === 'print');
   if (view === 'stats') return viewStats(main);
   if (view === 'settings') return viewSettings(main);
   return viewArchive(main);
@@ -155,13 +156,14 @@ function viewArchive(main) {
   <div class="page-head">
     <div><h1>${esc(t('navArchive'))}</h1><p class="muted"><span class="num">${App.all.length}</span> ${esc(t('reportsCount'))}</p></div>
     <div class="head-actions">
-      <button class="btn ghost" id="bExportCsv">${esc(t('exportCsv'))}</button>
-      <button class="btn ghost" id="bBackup">${esc(t('exportJson'))}</button>
-      <button class="btn primary" id="bNew">+ ${esc(t('navNew'))}</button>
+      <button class="btn ghost" id="bPrintList">${ico('printer')}${esc(t('printList'))}</button>
+      <button class="btn ghost" id="bExportCsv">${ico('sheet')}${esc(t('exportCsv'))}</button>
+      <button class="btn ghost" id="bBackup">${ico('cloudDown')}${esc(t('exportJson'))}</button>
+      <button class="btn primary" id="bNew">${ico('newdoc')}${esc(t('navNew'))}</button>
     </div>
   </div>
   <div class="filters">
-    <input id="fQ" type="search" placeholder="${esc(t('search'))}" value="${esc(archiveFilter.q)}" aria-label="${esc(t('search'))}">
+    <span class="search-box">${ico('search')}<input id="fQ" type="search" placeholder="${esc(t('search'))}" value="${esc(archiveFilter.q)}" aria-label="${esc(t('search'))}"></span>
     <label class="inline">${esc(t('from'))}<input id="fFrom" type="date" value="${archiveFilter.from}"></label>
     <label class="inline">${esc(t('to'))}<input id="fTo" type="date" value="${archiveFilter.to}"></label>
     <select id="fStatus" aria-label="${esc(t('colStatus'))}">
@@ -186,7 +188,8 @@ function viewArchive(main) {
       return hay.includes(q);
     }).sort((a, b) => (b.procedure?.date || '').localeCompare(a.procedure?.date || '') || (b.updatedAt || 0) - (a.updatedAt || 0));
     const list = $('#list');
-    if (!rows.length) { list.innerHTML = `<p class="empty">${esc(App.all.length ? t('noMatch') : t('noReports'))}</p>`; return; }
+    App.filtered = rows;
+    if (!rows.length) { list.innerHTML = `<p class="empty">${ico('fan', 'xxl')}<br>${esc(App.all.length ? t('noMatch') : t('noReports'))}</p>`; return; }
     list.innerHTML = `<div class="rep-row rep-headrow" aria-hidden="true">
         <span>${esc(t('colDate'))}</span><span>${esc(t('colPatient'))}</span><span>${esc(t('colProcedure'))}</span><span>${esc(t('colImpression'))}</span><span>${esc(t('colStatus'))}</span><span></span></div>` +
       rows.map(r => {
@@ -205,10 +208,11 @@ function viewArchive(main) {
             ${r.sample ? `<span class="pill neutral">${esc(t('sample'))}</span>` : ''}
           </span>
           <span class="c-act">
-            <button class="btn sm" data-act="view">${esc(t('open'))}</button>
-            <button class="btn sm ghost" data-act="edit">${esc(t('edit'))}</button>
-            <button class="btn sm ghost" data-act="dup" title="${esc(t('duplicate'))}">${esc(t('duplicate'))}</button>
-            <button class="btn sm ghost danger-text" data-act="del">${esc(t('del'))}</button>
+            <button class="btn sm" data-act="view">${ico('eye')}${esc(t('open'))}</button>
+            <button class="btn sm ghost" data-act="print" title="${esc(t('print'))}" aria-label="${esc(t('print'))}">${ico('printer')}</button>
+            <button class="btn sm ghost" data-act="edit" title="${esc(t('edit'))}" aria-label="${esc(t('edit'))}">${ico('pencil')}</button>
+            <button class="btn sm ghost" data-act="dup" title="${esc(t('duplicate'))}" aria-label="${esc(t('duplicate'))}">${ico('copy2')}</button>
+            <button class="btn sm ghost" data-act="del" title="${esc(t('del'))}" aria-label="${esc(t('del'))}">${ico('trash')}</button>
           </span></article>`;
       }).join('');
   };
@@ -221,6 +225,7 @@ function viewArchive(main) {
   $('#bNew').onclick = () => go('#edit');
   $('#bBackup').onclick = exportBackup;
   $('#bExportCsv').onclick = exportCsv;
+  $('#bPrintList').onclick = () => printRegister(App.filtered || []);
   $('#list').onclick = async e => {
     const btn = e.target.closest('[data-act]');
     const row = e.target.closest('.rep-row[data-id]');
@@ -228,6 +233,7 @@ function viewArchive(main) {
     const id = row.dataset.id;
     const act = btn ? btn.dataset.act : 'view';
     if (act === 'view') go('#view/' + id);
+    if (act === 'print') go('#view/' + id + '/print');
     if (act === 'edit') go('#edit/' + id);
     if (act === 'dup') {
       const src = await DB.get(id);
@@ -320,23 +326,23 @@ async function viewEditor(main, id) {
     <form id="form" class="form" novalidate autocomplete="off"></form>
   </div>
   <div class="actionbar">
-    <button class="btn ghost" id="bCancel" type="button">${esc(t('cancel'))}</button>
+    <button class="btn ghost" id="bCancel" type="button">${ico('close')}${esc(t('cancel'))}</button>
     <span class="spacer"></span>
-    <button class="btn ghost" id="bPreview" type="button">${esc(t('preview'))}</button>
-    <button class="btn" id="bDraft" type="button">${esc(t('saveDraft'))}</button>
-    <button class="btn primary" id="bFinal" type="button">${esc(t('finalize'))}</button>
+    <button class="btn ghost" id="bPreview" type="button">${ico('printer')}${esc(t('preview'))}</button>
+    <button class="btn" id="bDraft" type="button">${ico('save')}${esc(t('saveDraft'))}</button>
+    <button class="btn primary" id="bFinal" type="button">${ico('shield')}${esc(t('finalize'))}</button>
   </div>${datalists()}`;
 
   const form = $('#form');
   form.innerHTML = SCHEMA.map(sec => `
     <section class="sec" id="sec-${sec.id}" data-sec="${sec.id}"${sectionVisible(sec, r) ? '' : ' hidden'}>
-      <h2>${esc(t(sec.l))}</h2>
+      <h2>${ico(SECTION_ICONS[sec.id], 'lg')}${esc(t(sec.l))}</h2>
       ${sec.custom === 'stations' ? stationsHTML(r) : ''}
       ${sec.custom === 'lesions' ? '<div id="lesions"></div>' : ''}
       ${sec.custom === 'rosemont' ? rosemontHTML(r) : ''}
       ${sec.custom === 'images' ? imagesShellHTML() : ''}
       ${sec.fields ? `<div class="grid">${sec.fields.map(f => fieldHTML(f, r)).join('')}</div>` : ''}
-      ${sec.custom === 'impression' ? `<div class="gen"><button type="button" class="btn ghost" id="bGen">${esc(t('genImpression'))}</button><small class="muted">${esc(t('genHint'))}</small></div>` : ''}
+      ${sec.custom === 'impression' ? `<div class="gen"><button type="button" class="btn ghost" id="bGen">${ico('star')}${esc(t('genImpression'))}</button><small class="muted">${esc(t('genHint'))}</small></div>` : ''}
     </section>`).join('');
   // impression generator sits above the text field
   const impSec = $('#sec-impression');
@@ -448,7 +454,7 @@ function drawToc() {
     const filled = sec.fields ? hasData(sec, r) : sec.custom === 'lesions' ? r.lesions.length > 0 : sec.custom === 'images' ? r.images.length > 0 : sec.custom === 'rosemont' ? (r.rosemont?.items || []).length > 0 : false;
     const stFilled = sec.custom === 'stations' && Object.values(r.stations || {}).some(s => s.s);
     const state = missing ? 'miss' : (filled || stFilled) ? 'done' : '';
-    return `<li><a href="#sec-${sec.id}" data-jump="${sec.id}" class="${state}"><i aria-hidden="true"></i>${esc(t(sec.l))}</a></li>`;
+    return `<li><a href="#sec-${sec.id}" data-jump="${sec.id}" class="${state}">${ico(SECTION_ICONS[sec.id])}<span>${esc(t(sec.l))}</span><i aria-hidden="true"></i></a></li>`;
   }).join('');
   toc.onclick = e => {
     const a = e.target.closest('[data-jump]');
@@ -462,7 +468,7 @@ function drawToc() {
 function stationsHTML(r) {
   return STATIONS.map((g, gi) => `
     <div class="st-group">
-      <div class="st-ghead"><h3>${esc(g.g[App.lang === 'ar' ? 1 : 0])}</h3><button type="button" class="btn sm ghost" data-lact="allNormal" data-g="${gi}">${esc(t('allNormal'))}</button></div>
+      <div class="st-ghead"><h3>${esc(g.g[App.lang === 'ar' ? 1 : 0])}</h3><button type="button" class="btn sm ghost" data-lact="allNormal" data-g="${gi}">${ico('check')}${esc(t('allNormal'))}</button></div>
       ${g.items.map(([c, en, ar]) => {
         const s = r.stations?.[c] || {};
         return `<div class="st-row" data-st="${c}" data-state="${s.s || ''}">
@@ -488,11 +494,11 @@ function renderLesions() {
   const r = App.rep;
   box.innerHTML = r.lesions.map((l, i) => `
     <div class="lesion" id="lesion-${i}">
-      <div class="lesion-head"><h3>${esc(t('lesion'))} <span class="num">${i + 1}</span></h3>
-        <button type="button" class="btn sm ghost danger-text" data-lact="rm" data-i="${i}">${esc(t('remove'))}</button></div>
+      <div class="lesion-head"><h3>${ico('target')}${esc(t('lesion'))} <span class="num">${i + 1}</span></h3>
+        <button type="button" class="btn sm ghost danger-text" data-lact="rm" data-i="${i}">${ico('close')}${esc(t('remove'))}</button></div>
       <div class="grid">${LESION_FIELDS.map(f => fieldHTML(f, r, `lesions.${i}.`, l)).join('')}</div>
     </div>`).join('') +
-    `<button type="button" class="btn ghost add" data-lact="add">+ ${esc(t('addLesion'))}</button>`;
+    `<button type="button" class="btn ghost add" data-lact="add">${ico('plus')}${esc(t('addLesion'))}</button>`;
   drawToc();
 }
 
@@ -514,7 +520,7 @@ function updateRosemont() {
 
 /* images */
 function imagesShellHTML() {
-  return `<div class="img-drop"><label class="btn ghost" for="imgIn">+ ${esc(t('addImages'))}</label>
+  return `<div class="img-drop"><label class="btn ghost" for="imgIn">${ico('image')}${esc(t('addImages'))}</label>
     <input id="imgIn" type="file" accept="image/*" multiple hidden><small class="muted">${esc(t('imagesHint'))}</small></div>
     <div id="imgs" class="img-grid"></div>`;
 }
@@ -524,7 +530,7 @@ function renderImages() {
   box.innerHTML = App.rep.images.map((im, i) => `
     <figure class="img-card"><img src="${im.src}" alt="${esc(im.cap || '')}">
       <figcaption><input type="text" data-k="images.${i}.cap" value="${esc(im.cap || '')}" placeholder="${esc(t('caption'))}" aria-label="${esc(t('caption'))}">
-      <button type="button" class="btn sm ghost danger-text" data-lact="imgRm" data-i="${i}" aria-label="${esc(t('remove'))}">✕</button></figcaption></figure>`).join('');
+      <button type="button" class="btn sm ghost danger-text" data-lact="imgRm" data-i="${i}" aria-label="${esc(t('remove'))}">${ico('close')}</button></figcaption></figure>`).join('');
   const inp = $('#imgIn');
   inp.onchange = async () => {
     for (const f of inp.files) {
